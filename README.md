@@ -190,6 +190,49 @@ Suíte de testes em `app/src/test/`:
 
 Todos os **16 testes passam** com `./gradlew testDebugUnitTest`.
 
+---
+
+## 8. Capturas de Tela — Layout do Aplicativo
+
+Imagens do layout real do **My Notes** (pasta [`img/`](img/)).
+
+### Tela principal (estado inicial)
+
+Lista de categorias em *chips* e seção de notas com o estado vazio
+(*"Nenhuma nota ainda"*), cabeçalho roxo e botões **+ Nova** sempre visíveis.
+
+<img src="img/list.png" width="280" alt="Tela principal do My Notes com chips de categorias e estado vazio de notas">
+
+### Lista de notas
+
+Cartões coloridos conforme a cor da categoria — fundo branco com texto
+preto (categoria branca) e demais cores com texto branco. Categorias
+criadas pelo usuário aparecem na barra de *chips*.
+
+<img src="img/notas.png" width="280" alt="Lista de notas com cartões coloridos por categoria (Limpeza, Atividade e Manutenção)">
+
+### Modal de nova nota
+
+Modal de fundo branco com chips de categoria (seleção destacada em
+roxo), campos **Título** e **Conteúdo** e botões **Cancelar**/**Salvar**
+em hierarquia Material 3.
+
+<img src="img/new_note.png" width="280" alt="Modal Nova Nota com seleção de categoria, título Compras e conteúdo Fazer compras no mercado">
+
+### Modal de nova categoria
+
+Nome, paleta de cores (incluindo branco) com anel de seleção,
+**pré-visualização** do chip em tempo real e botão **Criar** roxo.
+
+<img src="img/new_category.png" width="280" alt="Modal Nova Categoria com nome, seletor de cores, pré-visualização e botão Criar">
+
+### Modal de editar categoria
+
+Mesmo modal em modo de edição: nome preenchido, **Atualizar** (primário),
+**Excluir** (outline vermelho) e **Cancelar**.
+
+<img src="img/editar_categoria.png" width="280" alt="Modal Editar Categoria com nome faculdade2, botões Atualizar, Excluir e Cancelar">
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.

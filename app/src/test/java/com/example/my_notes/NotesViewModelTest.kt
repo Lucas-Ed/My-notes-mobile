@@ -122,6 +122,36 @@ class NotesViewModelTest {
     }
 
     @Test
+    fun `onCategorySave - nome duplicado nao salva e define erro`() = runTest {
+        // "Angular" já existe em sampleCategories (id 1)
+        val duplicate = Category(id = 0, name = "angular", color = "#ffd54f")
+
+        viewModel.onAddCategoryClick()
+        viewModel.onCategorySave(duplicate)
+
+        coVerify(exactly = 0) { repository.saveCategory(any()) }
+        assertEquals(
+            "Já existe uma categoria com esse nome",
+            viewModel.uiState.value.error
+        )
+        // O diálogo permanece aberto para o usuário corrigir o nome
+        assertTrue(viewModel.uiState.value.isCategoryDialogVisible)
+    }
+
+    @Test
+    fun `onCategoryDelete - exclui categoria e fecha dialog`() = runTest {
+        val categoryToDelete = sampleCategories.first()
+        coEvery { repository.deleteCategory(any()) } returns Unit
+
+        viewModel.onCategoryClick(categoryToDelete)
+        viewModel.onCategoryDelete(categoryToDelete)
+
+        coVerify(exactly = 1) { repository.deleteCategory(categoryToDelete) }
+        assertFalse(viewModel.uiState.value.isCategoryDialogVisible)
+        assertNull(viewModel.uiState.value.categoryBeingEdited)
+    }
+
+    @Test
     fun `onNoteSave - erro no repositorio define mensagem de erro`() = runTest {
         val note = Note(id = 0, title = "T", content = "C", categoryId = 1)
         coEvery { repository.saveNote(any()) } throws RuntimeException("Falha no banco")
@@ -129,6 +159,44 @@ class NotesViewModelTest {
         viewModel.onNoteSave(note)
 
         assertEquals("Falha no banco", viewModel.uiState.value.error)
+    }
+
+    @Test
+    fun `onNoteSave - preserva caracteres especiais no titulo e conteudo`() = runTest {
+        val specialTitle = "Ação & Revisão (v2.0) — ção, ã, é, \"aspas\" e #hashtag!"
+        val specialContent = "100% com ênfasi @user <tag> |; R$ 5,00 🚀"
+        val note = Note(
+            id = 0,
+            title = specialTitle,
+            content = specialContent,
+            categoryId = 1
+        )
+        coEvery { repository.saveNote(any()) } returns Unit
+
+        viewModel.onNoteSave(note)
+
+        coVerify(exactly = 1) {
+            repository.saveNote(
+                match {
+                    it.title == specialTitle && it.content == specialContent
+                }
+            )
+        }
+        assertFalse(viewModel.uiState.value.isNoteDialogVisible)
+    }
+
+    @Test
+    fun `onCategorySave - preserva caracteres especiais no nome`() = runTest {
+        val specialName = "Configurações ç,ã,é & \"favoritas\" #1"
+        val category = Category(id = 0, name = specialName, color = "#ffffff")
+        coEvery { repository.saveCategory(any()) } returns Unit
+
+        viewModel.onCategorySave(category)
+
+        coVerify(exactly = 1) {
+            repository.saveCategory(match { it.name == specialName })
+        }
+        assertFalse(viewModel.uiState.value.isCategoryDialogVisible)
     }
 
     @Test

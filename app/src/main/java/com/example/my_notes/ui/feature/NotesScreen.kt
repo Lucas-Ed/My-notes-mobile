@@ -237,7 +237,8 @@ fun NotesScreen(
         CategoryDialog(
             category = uiState.categoryBeingEdited,
             onDismiss = viewModel::onCategoryDialogDismiss,
-            onSave = viewModel::onCategorySave
+            onSave = viewModel::onCategorySave,
+            onDelete = viewModel::onCategoryDelete
         )
     }
 }

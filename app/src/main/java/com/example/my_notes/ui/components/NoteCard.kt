@@ -35,8 +35,8 @@ import com.example.my_notes.ui.theme.parseHexColor
  * Exibe título e prévia do conteúdo, com fundo colorido
  * conforme a cor da categoria da nota.
  *
- * Exibição alinhada ao layout web: fundo colorido,
- * título em negrito e conteúdo em texto cinza.
+ * Contraste da fonte: fundo branco → texto preto;
+ * demais cores de fundo → texto branco.
  *
  * @param note Nota a ser exibida
  * @param categoryColor Cor hexadecimal da categoria da nota
@@ -48,6 +48,10 @@ fun NoteCard(
     categoryColor: String,
     onClick: () -> Unit
 ) {
+    val noteBackgroundColor = parseHexColor(categoryColor)
+    val noteTextColor =
+        if (noteBackgroundColor == Color.White) Color.Black else Color.White
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -55,7 +59,7 @@ fun NoteCard(
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = parseHexColor(categoryColor)
+            containerColor = noteBackgroundColor
         )
     ) {
         Column(
@@ -69,7 +73,7 @@ fun NoteCard(
                 text = note.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF444444),
+                color = noteTextColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -80,7 +84,7 @@ fun NoteCard(
             Text(
                 text = note.content,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF555555),
+                color = noteTextColor,
                 maxLines = 5,
                 overflow = TextOverflow.Ellipsis
             )

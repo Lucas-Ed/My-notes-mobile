@@ -1,7 +1,10 @@
 package com.example.my_notes.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,14 +14,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,6 +43,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.my_notes.data.model.Category
 import com.example.my_notes.data.model.Note
@@ -41,7 +55,8 @@ import com.example.my_notes.ui.theme.parseHexColor
  * Diálogo para criar ou editar uma nota.
  *
  * Funcionalidades alinhadas à proposta web:
- * - Fundo do diálogo muda conforme a categoria selecionada (recurso extra).
+ * - Fundo branco fixo; a cor da categoria aparece apenas nos chips
+ *   de seleção (bolinha colorida de cada categoria).
  * - Campos: categoria (seleção), título e conteúdo.
  * - Botão de exclusão visível apenas ao editar uma nota existente.
  * - Botão Salvar habilitado somente com formulário válido.
@@ -63,8 +78,13 @@ fun NoteDialog(
     var title by rememberSaveable(note?.id) { mutableStateOf(note?.title ?: "") }
     var content by rememberSaveable(note?.id) { mutableStateOf(note?.content ?: "") }
     // mutableIntStateOf evita autoboxing de Int (recomendação do lint)
+    // Se a categoria da nota foi excluída, inicia em 0 para o usuário
+    // escolher outra antes de salvar (validação exige categoria != 0).
     var categoryId by rememberSaveable(note?.id) {
-        mutableIntStateOf(note?.categoryId ?: categories.firstOrNull()?.id ?: 0)
+        val initial = note?.let { n ->
+            if (categories.any { it.id == n.categoryId }) n.categoryId else 0
+        } ?: (categories.firstOrNull()?.id ?: 0)
+        mutableIntStateOf(initial)
     }
 
     val isEditing = note != null
@@ -72,64 +92,60 @@ fun NoteDialog(
     // Formulário válido: título, conteúdo e categoria obrigatórios
     val isFormValid = title.isNotBlank() && content.isNotBlank() && categoryId != 0
 
-    // Cor de fundo do diálogo conforme a categoria selecionada
-    val dialogColor = categories
-        .find { it.id == categoryId }
-        ?.let { parseHexColor(it.color) }
-        ?: MaterialTheme.colorScheme.surface
-
-    // Cor de texto legível sobre o fundo colorido do diálogo
-    val onDialogColor = if (dialogColor.luminance() > 0.5f) Color(0xFF212121) else Color.White
-
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = dialogColor,
+        containerColor = Color.White,
+        icon = {
+            Icon(
+                imageVector = Icons.Outlined.EditNote,
+                contentDescription = null,
+                tint = DialogBrandColor
+            )
+        },
         title = {
             Text(
                 text = if (isEditing) "Editar Nota" else "Nova Nota",
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = onDialogColor
+                color = DialogContentColor,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         },
         text = {
-            Column {
+            // verticalScroll evita que o conteúdo seja cortado em telas pequenas
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 // --------------------------------------------------
                 // Seleção de categoria
                 // --------------------------------------------------
                 Text(
                     text = "Categoria",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = onDialogColor
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = DialogContentColor.copy(alpha = 0.85f)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    categories.take(5).forEach { category ->
-                        val isSelected = category.id == categoryId
-                        Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(
-                                    if (isSelected) Color.Black.copy(alpha = 0.25f)
-                                    else Color.Black.copy(alpha = 0.10f)
-                                )
-                                .clickable { categoryId = category.id }
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(10.dp)
-                                    .background(parseHexColor(category.color), CircleShape)
-                            )
-                            Text(
-                                text = category.name,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = onDialogColor
+                // horizontalScroll permite rolar quando há muitas categorias
+                if (categories.isEmpty()) {
+                    Text(
+                        text = "Nenhuma categoria disponível. Crie uma em Categorias.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = DialogContentColor.copy(alpha = 0.75f)
+                    )
+                } else {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                    ) {
+                        categories.forEach { category ->
+                            CategorySelectChip(
+                                category = category,
+                                isSelected = category.id == categoryId,
+                                contentColor = DialogContentColor,
+                                onClick = { categoryId = category.id }
                             )
                         }
                     }
@@ -145,8 +161,16 @@ fun NoteDialog(
                     onValueChange = { title = it },
                     label = { Text("Título") },
                     singleLine = true,
+                    // Aceita qualquer caractere exatamente como digitado:
+                    // sem autocorreção para não mascarar símbolos/acentos
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        capitalization = KeyboardCapitalization.Sentences,
+                        autoCorrectEnabled = false
+                    ),
                     modifier = Modifier.fillMaxWidth(),
-                    colors = dialogTextFieldColors(onDialogColor)
+                    shape = MaterialTheme.shapes.medium,
+                    colors = dialogTextFieldColors(DialogContentColor)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -160,8 +184,16 @@ fun NoteDialog(
                     label = { Text("Conteúdo") },
                     minLines = 3,
                     maxLines = 6,
+                    // Aceita qualquer caractere exatamente como digitado:
+                    // sem autocorreção para não mascarar símbolos/acentos
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        capitalization = KeyboardCapitalization.Sentences,
+                        autoCorrectEnabled = false
+                    ),
                     modifier = Modifier.fillMaxWidth(),
-                    colors = dialogTextFieldColors(onDialogColor)
+                    shape = MaterialTheme.shapes.medium,
+                    colors = dialogTextFieldColors(DialogContentColor)
                 )
             }
         },
@@ -177,27 +209,41 @@ fun NoteDialog(
                         )
                     )
                 },
-                enabled = isFormValid
+                enabled = isFormValid,
+                shape = MaterialTheme.shapes.medium,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = DialogBrandColor,
+                    contentColor = Color.White,
+                    disabledContainerColor = DialogContentColor.copy(alpha = 0.10f),
+                    disabledContentColor = DialogContentColor.copy(alpha = 0.38f)
+                )
             ) {
-                Text("Confirmar")
+                Text("Salvar", fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 // Botão de exclusão: exibido somente ao editar nota existente
                 if (isEditing) {
-                    Button(
+                    OutlinedButton(
                         onClick = { onDelete(note) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFB71C1C)
-                        )
+                        shape = MaterialTheme.shapes.medium,
+                        border = BorderStroke(1.dp, DialogDestructiveColor),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = DialogDestructiveColor)
                     ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Delete,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = DialogDestructiveColor
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text("Excluir")
                     }
-                    Spacer(modifier = Modifier.size(8.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                 }
                 TextButton(onClick = onDismiss) {
-                    Text("Cancelar", color = onDialogColor)
+                    Text("Cancelar", color = DialogContentColor, fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -205,24 +251,48 @@ fun NoteDialog(
 }
 
 /**
- * Cria as cores de um [OutlinedTextField] dentro dos diálogos coloridos,
- * garantindo contraste adequado com a cor de fundo.
+ * Chip de seleção de categoria dentro do diálogo de nota.
+ * Sobre o fundo branco: seleção destacada com a cor da marca
+ * (fundo lavanda suave + borda roxa) e a bolinha colorida da categoria.
  */
 @Composable
-private fun dialogTextFieldColors(textColor: Color) = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = textColor,
-    unfocusedBorderColor = textColor.copy(alpha = 0.6f),
-    focusedLabelColor = textColor,
-    unfocusedLabelColor = textColor.copy(alpha = 0.8f),
-    focusedTextColor = textColor,
-    unfocusedTextColor = textColor,
-    cursorColor = textColor
-)
+private fun CategorySelectChip(
+    category: Category,
+    isSelected: Boolean,
+    contentColor: Color,
+    onClick: () -> Unit
+) {
+    val backgroundColor =
+        if (isSelected) DialogBrandColor.copy(alpha = 0.12f)
+        else contentColor.copy(alpha = 0.06f)
 
-/**
- * Calcula a luminância relativa de uma cor para decidir
- * se o texto deve ser escuro ou claro (contraste).
- */
-private fun Color.luminance(): Float {
-    return (0.299f * red + 0.587f * green + 0.114f * blue)
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(backgroundColor)
+            .then(
+                if (isSelected) {
+                    Modifier.border(1.5.dp, DialogBrandColor, RoundedCornerShape(50))
+                } else {
+                    Modifier.border(1.dp, contentColor.copy(alpha = 0.15f), RoundedCornerShape(50))
+                }
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .clip(CircleShape)
+                .background(parseHexColor(category.color))
+        )
+        Text(
+            text = category.name,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            color = contentColor
+        )
+    }
 }

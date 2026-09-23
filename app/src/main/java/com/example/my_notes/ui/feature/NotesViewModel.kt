@@ -150,14 +150,36 @@ class NotesViewModel @Inject constructor(
         }
     }
 
-    /** Salva (insere ou atualiza) a categoria e fecha o diálogo. */
+    /**
+     * Salva (insere ou atualiza) a categoria e fecha o diálogo.
+     * Valida nomes duplicados para dar feedback claro ao usuário.
+     */
     fun onCategorySave(category: Category) {
+        val nameTaken = _uiState.value.categories.any {
+            it.id != category.id && it.name.equals(category.name, ignoreCase = true)
+        }
+        if (nameTaken) {
+            _uiState.update { it.copy(error = "Já existe uma categoria com esse nome") }
+            return
+        }
         viewModelScope.launch {
             try {
                 repository.saveCategory(category)
                 onCategoryDialogDismiss()
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message ?: "Erro ao salvar categoria") }
+            }
+        }
+    }
+
+    /** Exclui a categoria informada e fecha o diálogo. */
+    fun onCategoryDelete(category: Category) {
+        viewModelScope.launch {
+            try {
+                repository.deleteCategory(category)
+                onCategoryDialogDismiss()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "Erro ao excluir categoria") }
             }
         }
     }
