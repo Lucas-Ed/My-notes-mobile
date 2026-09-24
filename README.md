@@ -24,18 +24,19 @@ banco de dados externos ou APIs de rede.
 
 ### Funcionalidades Principais
 
-| # | Funcionalidade | Descrição |
-|---|----------------|-----------|
-| 1 | Listar notas | Exibe cartões coloridos com título e conteúdo das notas |
-| 2 | Listar categorias | Exibe chips com ponto colorido e nome de cada categoria |
-| 3 | Criar nota | Diálogo com campos título, conteúdo e seleção de categoria |
-| 4 | Editar nota | Tocar em uma nota abre o diálogo já preenchido |
-| 5 | Excluir nota | Botão "Excluir" disponível ao editar uma nota existente |
-| 6 | Criar categoria | Diálogo com nome e seletor de cor (paleta predefinida) |
-| 7 | Editar categoria | Tocar em uma categoria abre o diálogo para edição |
-| 8 | Persistência local | Room Database armazena dados no dispositivo (sem internet) |
-| 9 | Cores dinâmicas | O fundo do diálogo da nota muda conforme a categoria escolhida |
-| 10 | Estado de erro | Mensagens de erro exibidas em Snackbar com tratamento adequado |
+| #  | Funcionalidade      | Descrição                                                                                               |
+| -- | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1  | Listar notas        | Exibe cartões coloridos com título e conteúdo das notas                                                |
+| 2  | Listar categorias   | Exibe chips com ponto colorido e nome de cada categoria                                                   |
+| 3  | Criar nota          | Diálogo com campos título, conteúdo e seleção de categoria                                           |
+| 4  | Editar nota         | Tocar em uma nota abre o diálogo já preenchido                                                          |
+| 5  | Excluir nota        | Botão "Excluir" disponível ao editar uma nota existente                                                 |
+| 6  | Criar categoria     | Diálogo com nome e seletor de cor (paleta predefinida)                                                   |
+| 7  | Editar categoria    | Tocar em uma categoria abre o diálogo para edição                                                      |
+| 8  | Excluir categoria   | Botão "Excluir" disponível ao editar uma categoria existente                                            |
+| 9  | Persistência local | Room Database armazena dados no dispositivo (sem internet)                                                |
+| 10 | Cores dinâmicas    | Cartões de nota coloridos pela categoria; cor da categoria nos chips e na pré-visualização dos modais |
+| 11 | Estado de erro      | Mensagens de erro exibidas em Snackbar com tratamento adequado                                            |
 
 ---
 
@@ -43,8 +44,7 @@ banco de dados externos ou APIs de rede.
 
 ### Interface do Usuário
 
-- **Tema escuro** com **cabeçalho roxo** (`#9400D3`), alinhado ao layout
-  web de referência do projeto.
+- **Tema escuro** com **cabeçalho roxo** (`#9400D3`).
 - **Cartões de notas coloridos** conforme a cor da categoria,
   facilitando a identificação visual.
 - **Chips de categorias** com bolinha colorida + nome.
@@ -69,45 +69,47 @@ banco de dados externos ou APIs de rede.
 ### Arquitetura (padrão recomendado pelo skill Android Kotlin)
 
 ```
-app/src/main/java/com/example/my_notes/
-├── data/                       # Camada de dados
-│   ├── local/                  # Room database
-│   │   ├── MyNotesDatabase.kt  # Banco Room + seeds iniciais
-│   │   ├── NoteDao.kt          # DAO das notas (Flow reativo)
-│   │   └── CategoryDao.kt      # DAO das categorias (Flow reativo)
-│   ├── model/                  # Entidades
-│   │   ├── Note.kt             # @Entity notes
-│   │   └── Category.kt         # @Entity categories
-│   └── repository/
-│       └── NotesRepository.kt  # Repositório (Flow + dispatchers injetados)
-├── di/
-│   └── AppModule.kt            # Módulo Hilt (injeção de dependência)
-├── ui/
-│   ├── theme/Theme.kt          # Tema Material 3 + parseHexColor()
-│   ├── feature/
-│   │   ├── NotesScreen.kt      # Tela principal (Compose)
-│   │   └── NotesViewModel.kt   # ViewModel + UiState (StateFlow)
-│   └── components/
-│       ├── NoteCard.kt         # Cartão de nota + item de categoria
-│       ├── NoteDialog.kt       # Diálogo criar/editar/excluir nota
-│       └── CategoryDialog.kt   # Diálogo criar/editar categoria
-├── MyNotesApplication.kt       # @HiltAndroidApp
-└── MainActivity.kt             # @AndroidEntryPoint + setContent
+📦My Notes /
+📂app/src/main/java/com/example/my_notes/
+├── 📂 data/                       # Camada de dados
+│   ├── 📂 local/                  # Room database
+│   │   ├── 📄 MyNotesDatabase.kt  # Banco Room (v2, sem seeds)
+│   │   ├── 📄 NoteDao.kt          # DAO das notas (Flow reativo)
+│   │   └── 📄 CategoryDao.kt      # DAO das categorias (Flow reativo)
+│   ├── 📂 model/                  # Entidades
+│   │   ├── 📄 Note.kt             # @Entity notes
+│   │    📄 Category.kt         # @Entity categories
+│   └── 📂 repository/
+│       └── 📄 NotesRepository.kt  # Repositório (Flow + dispatchers injetados)
+├──📂 di/
+│   └── 📄 AppModule.kt            # Módulo Hilt (injeção de dependência)
+├── 📂 ui/
+│   ├── 📄theme/Theme.kt          # Tema Material 3 + parseHexColor()
+│   ├── 📂 feature/
+│   │   ├── 📄 NotesScreen.kt      # Tela principal (Compose)
+│   │   └── 📄 NotesViewModel.kt   # ViewModel + UiState (StateFlow)
+│   └── 📂components/
+│       ├── 📄 NoteCard.kt         # Cartão de nota + item de categoria
+│       ├── 📄 NoteDialog.kt       # Diálogo criar/editar/excluir nota
+│       ├── 📄 CategoryDialog.kt   # Diálogo criar/editar/excluir categoria
+│       └── 📄 DialogStyle.kt      # Tokens e helpers visuais dos diálogos
+├── 📄 MyNotesApplication.kt       # @HiltAndroidApp
+└── 📄 MainActivity.kt             # @AndroidEntryPoint + setContent
 ```
 
 ### Recursos do Android SDK Utilizados
 
-| Recurso | Onde é usado |
-|---------|--------------|
-| **Jetpack Compose** | Toda a interface (telas, diálogos, listas) |
-| **LazyColumn / LazyRow** | Listas de notas e categorias (equivalente ao RecyclerView) |
-| **Room Database** | Persistência local de notas e categorias |
-| **Hilt** | Injeção de dependência (ViewModel, Repository, DAO) |
-| **ViewModel + StateFlow** | Gerenciamento de estado sobrevivente a rotações |
-| **Coroutines + Flow** | Assíncrono e observação reativa do banco |
-| **Snackbar** | Tratamento/feedback de erros de interface |
-| **enableEdgeToEdge** | Exibição de borda a borda |
-| **rememberSaveable** | Preservação de campos de formulário na rotação |
+| Recurso                         | Onde é usado                                              |
+| ------------------------------- | ---------------------------------------------------------- |
+| **Jetpack Compose**       | Toda a interface (telas, diálogos, listas)                |
+| **LazyColumn / LazyRow**  | Listas de notas e categorias (equivalente ao RecyclerView) |
+| **Room Database**         | Persistência local de notas e categorias                  |
+| **Hilt**                  | Injeção de dependência (ViewModel, Repository, DAO)     |
+| **ViewModel + StateFlow** | Gerenciamento de estado sobrevivente a rotações          |
+| **Coroutines + Flow**     | Assíncrono e observação reativa do banco                |
+| **Snackbar**              | Tratamento/feedback de erros de interface                  |
+| **enableEdgeToEdge**      | Exibição de borda a borda                                |
+| **rememberSaveable**      | Preservação de campos de formulário na rotação        |
 
 ### Tratamento de Eventos
 
@@ -122,8 +124,8 @@ app/src/main/java/com/example/my_notes/
 
 - **Room Database** (`my_notes.db`) armazena as tabelas `notes` e
   `categories` no armazenamento interno do dispositivo.
-- Na primeira abertura, categorias iniciais são semeadas automaticamente
-  (Angular, React, Vue, Backend — mesmas cores do projeto web).
+- O banco inicia **vazio**: o usuário cria as próprias categorias
+  (migração 1→2 removeu as categorias pré-definidas do seed inicial).
 - **Nenhuma conexão com rede é necessária** — atende à restrição
   da avaliação.
 
@@ -138,12 +140,12 @@ app/src/main/java/com/example/my_notes/
 
 ## 4. Critérios de Avaliação — Conferência
 
-| Critério | Peso | Situação |
-|----------|------|----------|
-| **Concepção e Criatividade** | 20% | Aplicativo prático, com identidade visual própria (tema escuro/roxo) |
-| **Funcionalidade** | 30% | CRUD completo de notas e categorias; 16 testes unitários passando; build APK sucesso |
-| **Interface do Usuário** | 25% | Jetpack Compose + Material 3; cartões coloridos; diálogos dinâmicos; Snackbar; estados de loading/vazio |
-| **Qualidade do Código** | 25% | Arquitetura em camadas; injeção de dependência; testes MockK + Turbine |
+| Critério                            | Peso | Situação                                                                                                 |
+| ------------------------------------ | ---- | ---------------------------------------------------------------------------------------------------------- |
+| **Concepção e Criatividade** | 20%  | Aplicativo prático, com identidade visual própria (tema escuro/roxo)                                     |
+| **Funcionalidade**             | 30%  | CRUD completo de notas e categorias; 20 testes unitários passando; build APK sucesso                      |
+| **Interface do Usuário**      | 25%  | Jetpack Compose + Material 3; cartões coloridos; diálogos dinâmicos; Snackbar; estados de loading/vazio |
+| **Qualidade do Código**       | 25%  | Arquitetura em camadas; injeção de dependência; testes MockK + Turbine                                  |
 
 ---
 
@@ -164,17 +166,17 @@ O APK gerado fica em:
 
 ## 6. Stack Tecnológica
 
-| Tecnologia | Versão |
-|------------|--------|
-| Kotlin (built-in AGP) | AGP 9.3.3 |
+| Tecnologia            | Versão    |
+| --------------------- | ---------- |
+| Kotlin (built-in AGP) | AGP 9.3.3  |
 | Jetpack Compose (BOM) | 2025.10.01 |
-| Room | 2.7.1 |
-| Hilt | 2.60.1 |
-| KSP | 2.3.11 |
-| Coroutines | 1.10.2 |
-| Lifecycle | 2.9.4 |
-| Gradle | 9.5.0 |
-| minSdk / targetSdk | 24 / 37 |
+| Room                  | 2.7.1      |
+| Hilt                  | 2.60.1     |
+| KSP                   | 2.3.11     |
+| Coroutines            | 1.10.2     |
+| Lifecycle             | 2.9.4      |
+| Gradle                | 9.5.0      |
+| minSdk / targetSdk    | 24 / 37    |
 
 ---
 
@@ -182,13 +184,20 @@ O APK gerado fica em:
 
 Suíte de testes em `app/src/test/`:
 
-- **NotesViewModelTest** (10 testes): carregamento inicial, abertura de
-  diálogos, salvar/excluir notas e categorias, tratamento de erros,
+- **NotesViewModelTest** (15 testes): carregamento inicial, abertura de
+  diálogos, salvar/excluir notas e categorias, rejeição de nome duplicado,
+  preservação de caracteres especiais, tratamento de erros,
   cor por categoria.
 - **ParseHexColorTest** (4 testes): conversão de cores hexadecimais.
+- **ExampleUnitTest** (1 teste): sanity check do template.
 - **MainDispatcherRule**: regra JUnit para Dispatcher.Main em testes.
 
-Todos os **16 testes passam** com `./gradlew testDebugUnitTest`.
+Há também o teste de UI **DialogSpecialCharactersTest**
+(`app/src/androidTest/`) que valida a digitação de caracteres especiais
+nos modais — rodar com dispositivo/emulador:
+`./gradlew connectedDebugAndroidTest`.
+
+Todos os **20 testes unitários passam** com `./gradlew testDebugUnitTest`.
 
 ---
 
@@ -201,7 +210,7 @@ Imagens do layout real do **My Notes** (pasta [`img/`](img/)).
 Lista de categorias em *chips* e seção de notas com o estado vazio
 (*"Nenhuma nota ainda"*), cabeçalho roxo e botões **+ Nova** sempre visíveis.
 
-<img src="img/list.png" width="280" alt="Tela principal do My Notes com chips de categorias e estado vazio de notas">
+<p align="center"><img src="img/list.png" width="280" alt="Tela principal do My Notes com chips de categorias e estado vazio de notas"></p>
 
 ### Lista de notas
 
@@ -209,7 +218,7 @@ Cartões coloridos conforme a cor da categoria — fundo branco com texto
 preto (categoria branca) e demais cores com texto branco. Categorias
 criadas pelo usuário aparecem na barra de *chips*.
 
-<img src="img/notas.png" width="280" alt="Lista de notas com cartões coloridos por categoria (Limpeza, Atividade e Manutenção)">
+<p align="center"><img src="img/notas.png" width="280" alt="Lista de notas com cartões coloridos por categoria (Limpeza, Atividade e Manutenção)"></p>
 
 ### Modal de nova nota
 
@@ -217,21 +226,21 @@ Modal de fundo branco com chips de categoria (seleção destacada em
 roxo), campos **Título** e **Conteúdo** e botões **Cancelar**/**Salvar**
 em hierarquia Material 3.
 
-<img src="img/new_note.png" width="280" alt="Modal Nova Nota com seleção de categoria, título Compras e conteúdo Fazer compras no mercado">
+<p align="center"><img src="img/new_note.png" width="280" alt="Modal Nova Nota com seleção de categoria, título Compras e conteúdo Fazer compras no mercado"></p>
 
 ### Modal de nova categoria
 
 Nome, paleta de cores (incluindo branco) com anel de seleção,
 **pré-visualização** do chip em tempo real e botão **Criar** roxo.
 
-<img src="img/new_category.png" width="280" alt="Modal Nova Categoria com nome, seletor de cores, pré-visualização e botão Criar">
+<p align="center"><img src="img/new_category.png" width="280" alt="Modal Nova Categoria com nome, seletor de cores, pré-visualização e botão Criar"></p>
 
 ### Modal de editar categoria
 
 Mesmo modal em modo de edição: nome preenchido, **Atualizar** (primário),
 **Excluir** (outline vermelho) e **Cancelar**.
 
-<img src="img/editar_categoria.png" width="280" alt="Modal Editar Categoria com nome faculdade2, botões Atualizar, Excluir e Cancelar">
+<p align="center"><img src="img/editar_categoria.png" width="280" alt="Modal Editar Categoria com nome faculdade2, botões Atualizar, Excluir e Cancelar"></p>
 
 ## 📄 Licença
 
