@@ -50,12 +50,13 @@ banco de dados externos ou APIs de rede.
 - **Chips de categorias** com bolinha colorida + nome.
 - Navegação intuitiva: tudo em uma única tela com seções claras
   (*Categorias* e *Notas*) e botões de ação sempre visíveis.
-- **Jetpack Compose** com Material 3 garante animações e interações
-  nativas fluidas.
+- **XML + View System**
+  (layouts editáveis no Android Studio — Layout Preview/Design Editor)
+  com **Material Components**.
 
 ### Experiência do Usuário
 
-- Indicador de carregamento (*CircularProgressIndicator*) durante a
+- Indicador de carregamento (*ProgressBar*) durante a
   inicialização.
 - Mensagem amigável quando não há notas cadastradas.
 - Validação de formulários: botões de salvar só habilitam com
@@ -66,7 +67,7 @@ banco de dados externos ou APIs de rede.
 
 ## 3. Implementação Técnica
 
-### Arquitetura (padrão recomendado pelo skill Android Kotlin)
+### Arquitetura 
 
 ```
 📦My Notes /
@@ -84,39 +85,49 @@ banco de dados externos ou APIs de rede.
 ├──📂 di/
 │   └── 📄 AppModule.kt            # Módulo Hilt (injeção de dependência)
 ├── 📂 ui/
-│   ├── 📄theme/Theme.kt          # Tema Material 3 + parseHexColor()
+│   ├── 📂 adapter/
+│   │   ├── 📄 NotesAdapter.kt     # RecyclerView de notas (DiffUtil)
+│   │   └── 📄 CategoriesAdapter.kt# Chips de categorias (DiffUtil)
 │   ├── 📂 feature/
-│   │   ├── 📄 NotesScreen.kt      # Tela principal (Compose)
 │   │   └── 📄 NotesViewModel.kt   # ViewModel + UiState (StateFlow)
-│   └── 📂components/
-│       ├── 📄 NoteCard.kt         # Cartão de nota + item de categoria
+│   └── 📂 dialogs/
 │       ├── 📄 NoteDialog.kt       # Diálogo criar/editar/excluir nota
 │       ├── 📄 CategoryDialog.kt   # Diálogo criar/editar/excluir categoria
-│       └── 📄 DialogStyle.kt      # Tokens e helpers visuais dos diálogos
+│       └── 📄 DialogUi.kt         # Paleta de cores + helpers visuais
+├── 📂 util/
+│   └── 📄 ColorUtils.kt           # parseHexColor + contraste de fonte
+├── 📂 res/layout/                 # Layouts XML (editáveis no Design Editor)
+│   ├── 📄 activity_main.xml       # Tela principal (Toolbar + listas)
+│   ├── 📄 item_note.xml           # Card de nota
+│   ├── 📄 item_category.xml       # Chip de categoria
+│   ├── 📄 dialog_note.xml         # Formulário de nota
+│   ├── 📄 dialog_category.xml     # Formulário de categoria
+│   └── 📄 item_color_swatch.xml   # Swatch da paleta de cores
 ├── 📄 MyNotesApplication.kt       # @HiltAndroidApp
-└── 📄 MainActivity.kt             # @AndroidEntryPoint + setContent
+└── 📄 MainActivity.kt             # @AndroidEntryPoint + setContentView
 ```
 
 ### Recursos do Android SDK Utilizados
 
-| Recurso                         | Onde é usado                                              |
-| ------------------------------- | ---------------------------------------------------------- |
-| **Jetpack Compose**       | Toda a interface (telas, diálogos, listas)                |
-| **LazyColumn / LazyRow**  | Listas de notas e categorias (equivalente ao RecyclerView) |
-| **Room Database**         | Persistência local de notas e categorias                  |
-| **Hilt**                  | Injeção de dependência (ViewModel, Repository, DAO)     |
-| **ViewModel + StateFlow** | Gerenciamento de estado sobrevivente a rotações          |
-| **Coroutines + Flow**     | Assíncrono e observação reativa do banco                |
-| **Snackbar**              | Tratamento/feedback de erros de interface                  |
-| **enableEdgeToEdge**      | Exibição de borda a borda                                |
-| **rememberSaveable**      | Preservação de campos de formulário na rotação        |
+| Recurso                           | Onde é usado                                             |
+| --------------------------------- | --------------------------------------------------------- |
+| **XML + View System**       | Toda a interface (layouts editáveis no Design Editor)    |
+| **RecyclerView + DiffUtil** | Listas de notas e categorias (adapters próprios)         |
+| **Material Components**     | Botões, caixas de texto, AlertDialogs, Toolbar, Snackbar |
+| **Room Database**           | Persistência local de notas e categorias                 |
+| **Hilt**                    | Injeção de dependência (ViewModel, Repository, DAO)    |
+| **ViewModel + StateFlow**   | Gerenciamento de estado sobrevivente a rotações         |
+| **Coroutines + Flow**       | Assíncrono e observação reativa do banco               |
+| **Snackbar / Toast**        | Tratamento/feedback de erros de interface                 |
+| **repeatOnLifecycle**       | Coleção do StateFlow apenas em primeiro plano           |
 
 ### Tratamento de Eventos
 
 - Cliques em botões (*Nova nota*, *Nova categoria*, *Confirmar*,
   *Cancelar*, *Excluir*) mapeados para métodos do `NotesViewModel`.
 - Tocar em nota/categoria abre o diálogo de edição correspondente.
-- Fechamento de diálogos via botão ou toque fora (onDismissRequest).
+- Fechamento de diálogos via botão ou toque fora — o
+  `setOnDismissListener` sincroniza o estado no `NotesViewModel`.
 - Erros de banco capturados com `try/catch` e exibidos em Snackbar.
 - Erros de `Flow` tratados com o operador `catch`.
 
@@ -140,12 +151,12 @@ banco de dados externos ou APIs de rede.
 
 ## 4. Critérios de Avaliação — Conferência
 
-| Critério                            | Peso | Situação                                                                                                 |
-| ------------------------------------ | ---- | ---------------------------------------------------------------------------------------------------------- |
-| **Concepção e Criatividade** | 20%  | Aplicativo prático, com identidade visual própria (tema escuro/roxo)                                     |
-| **Funcionalidade**             | 30%  | CRUD completo de notas e categorias; 20 testes unitários passando; build APK sucesso                      |
-| **Interface do Usuário**      | 25%  | Jetpack Compose + Material 3; cartões coloridos; diálogos dinâmicos; Snackbar; estados de loading/vazio |
-| **Qualidade do Código**       | 25%  | Arquitetura em camadas; injeção de dependência; testes MockK + Turbine                                  |
+| Critério                            | Peso | Situação                                                                                               |
+| ------------------------------------ | ---- | -------------------------------------------------------------------------------------------------------- |
+| **Concepção e Criatividade** | 20%  | Aplicativo prático, com identidade visual própria (tema escuro/roxo)                                   |
+| **Funcionalidade**             | 30%  | CRUD completo de notas e categorias; 20 testes unitários passando; build APK sucesso                    |
+| **Interface do Usuário**      | 25%  | XML/View System + Material Components; cartões coloridos; diálogos; Snackbar; estados de loading/vazio |
+| **Qualidade do Código**       | 25%  | Arquitetura em camadas; injeção de dependência; testes MockK + Turbine                                |
 
 ---
 
@@ -166,17 +177,18 @@ O APK gerado fica em:
 
 ## 6. Stack Tecnológica
 
-| Tecnologia            | Versão    |
-| --------------------- | ---------- |
-| Kotlin (built-in AGP) | AGP 9.3.3  |
-| Jetpack Compose (BOM) | 2025.10.01 |
-| Room                  | 2.7.1      |
-| Hilt                  | 2.60.1     |
-| KSP                   | 2.3.11     |
-| Coroutines            | 1.10.2     |
-| Lifecycle             | 2.9.4      |
-| Gradle                | 9.5.0      |
-| minSdk / targetSdk    | 24 / 37    |
+| Tecnologia            | Versão   |
+| --------------------- | --------- |
+| Kotlin (built-in AGP) | AGP 9.3.3 |
+| Material Components   | 1.14.0    |
+| RecyclerView          | 1.4.0     |
+| Room                  | 2.7.1     |
+| Hilt                  | 2.60.1    |
+| KSP                   | 2.3.11    |
+| Coroutines            | 1.10.2    |
+| Lifecycle             | 2.9.4     |
+| Gradle                | 9.5.0     |
+| minSdk / targetSdk    | 24 / 37   |
 
 ---
 
@@ -193,9 +205,9 @@ Suíte de testes em `app/src/test/`:
 - **MainDispatcherRule**: regra JUnit para Dispatcher.Main em testes.
 
 Há também o teste de UI **DialogSpecialCharactersTest**
-(`app/src/androidTest/`) que valida a digitação de caracteres especiais
-nos modais — rodar com dispositivo/emulador:
-`./gradlew connectedDebugAndroidTest`.
+(`app/src/androidTest/`, Espresso + activity hospedeira) que valida a
+digitação de caracteres especiais nos modais — rodar com
+dispositivo/emulador: `./gradlew connectedDebugAndroidTest`.
 
 Todos os **20 testes unitários passam** com `./gradlew testDebugUnitTest`.
 

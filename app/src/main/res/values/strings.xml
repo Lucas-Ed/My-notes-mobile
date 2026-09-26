@@ -1,3 +1,32 @@
 <resources>
     <string name="app_name">My-notes</string>
+
+    <!-- Tela principal -->
+    <string name="screen_title">My Notes</string>
+    <string name="header_categories">Categorias</string>
+    <string name="header_notes">Notas</string>
+    <string name="action_new_category">+ Nova</string>
+    <string name="action_new_note">+ Nova</string>
+    <string name="categories_empty">Nenhuma categoria cadastrada.</string>
+    <string name="notes_empty">Nenhuma nota ainda.</string>
+
+    <!-- Diálogo de nota -->
+    <string name="note_dialog_new_title">Nova Nota</string>
+    <string name="note_dialog_edit_title">Editar Nota</string>
+    <string name="label_category">Categoria</string>
+    <string name="hint_title">Título</string>
+    <string name="hint_content">Conteúdo da nota</string>
+    <string name="categories_empty_dialog">Nenhuma categoria disponível. Crie uma categoria primeiro.</string>
+    <string name="button_save">Salvar</string>
+    <string name="button_cancel">Cancelar</string>
+    <string name="button_delete">Excluir</string>
+
+    <!-- Diálogo de categoria -->
+    <string name="category_dialog_new_title">Nova Categoria</string>
+    <string name="category_dialog_edit_title">Editar Categoria</string>
+    <string name="label_color">Cor</string>
+    <string name="label_preview">Pré-visualização</string>
+    <string name="hint_name">Nome da categoria</string>
+    <string name="button_create">Criar</string>
+    <string name="button_update">Atualizar</string>
 </resources>

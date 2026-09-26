@@ -1,37 +1,31 @@
 package com.example.my_notes
 
-import com.example.my_notes.ui.theme.parseHexColor
-import androidx.compose.ui.graphics.Color
+import com.example.my_notes.util.parseHexColor
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
  * Testes da função utilitária [parseHexColor],
- * responsável por converter cores hexadecimais em cores do Compose.
+ * responsável por converter cores hexadecimais
+ * em inteiros ARGB (0xAARRGGBB).
  */
 class ParseHexColorTest {
 
     @Test
     fun `parseHexColor - cor hex valida de 6 digitos`() {
         val color = parseHexColor("#f6c2d9")
-        // #f6c2d9 = R:246 G:194 B:217 com alfa 1.0
-        val expected = Color(
-            red = 246f / 255f,
-            green = 194f / 255f,
-            blue = 217f / 255f,
-            alpha = 1f
-        )
-        assertEquals(expected, color)
+        // #f6c2d9 = FF (alfa opaco) + R:246 G:194 B:217
+        assertEquals(0xFFF6C2D9.toInt(), color)
     }
 
     @Test
     fun `parseHexColor - cor hex sem prefixo`() {
         val color = parseHexColor("ffffff")
-        assertEquals(Color.White, color)
+        assertEquals(0xFFFFFFFF.toInt(), color)
     }
 
     @Test
-    fun `parseHexColor - string invalida retorna branco`() {
+    fun `parseHexColor - cor hex de 3 digitos expande para 6`() {
         val color = parseHexColor("abc")
         // "abc" tem 3 dígitos: a->aa, b->bb, c->cc => FF (aabbcc)
         val expected = parseHexColor("#aabbcc")
@@ -41,6 +35,6 @@ class ParseHexColorTest {
     @Test
     fun `parseHexColor - string vazia retorna branco de fallback`() {
         val color = parseHexColor("")
-        assertEquals(Color.White, color)
+        assertEquals(0xFFFFFFFF.toInt(), color)
     }
 }

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Swatch de cor selecionável (paleta do diálogo de categoria) -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swatchRoot"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_marginEnd="8dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Anel de seleção: visível apenas quando selecionado -->
+    <View
+        android:id="@+id/swatchRing"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_gravity="center"
+        android:background="@drawable/swatch_ring"
+        android:visibility="gone" />
+
+    <!-- Bolinha com a cor da categoria -->
+    <View
+        android:id="@+id/swatchColor"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center" />
+
+    <!-- Check exibido quando selecionado -->
+    <TextView
+        android:id="@+id/swatchCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="✓"
+        android:textColor="@color/text_dark"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+</FrameLayout>

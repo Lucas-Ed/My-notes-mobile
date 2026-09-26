@@ -1,19 +1,22 @@
 package com.example.my_notes
 
-import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
+import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isEnabled
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.my_notes.data.model.Category
 import com.example.my_notes.data.model.Note
-import com.example.my_notes.ui.components.CategoryDialog
-import com.example.my_notes.ui.components.NoteDialog
-import com.example.my_notes.ui.theme.MyNotesTheme
+import com.example.my_notes.ui.dialogs.CategoryDialog
+import com.example.my_notes.ui.dialogs.NoteDialog
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
  * Testes de UI (instrumentação) que garantem que os campos de
@@ -23,10 +26,11 @@ import org.junit.Test
  * Rodar com um emulador/dispositivo conectado:
  * ./gradlew connectedDebugAndroidTest
  */
+@RunWith(AndroidJUnit4::class)
 class DialogSpecialCharactersTest {
 
-    @get:Rule
-    val rule = createComposeRule()
+    private fun launchHost(): ActivityScenario<DialogHostActivity> =
+        ActivityScenario.launch(DialogHostActivity::class.java)
 
     @Test
     fun noteDialog_tituloEConteudoAceitamCaracteresEspeciais() {
@@ -34,36 +38,38 @@ class DialogSpecialCharactersTest {
         val specialContent = "Configurações (v2.0); R\$ 5,00 | ç,ã,é 🚀"
         var savedNote: Note? = null
 
-        rule.setContent {
-            MyNotesTheme {
-                NoteDialog(
+        launchHost().use { scenario ->
+            scenario.onActivity { activity ->
+                NoteDialog.show(
+                    activity = activity,
                     note = null,
                     categories = listOf(
                         Category(id = 1, name = "Ação & Revisão", color = "#ffffff")
                     ),
-                    onDismiss = {},
                     onSave = { savedNote = it },
                     onDelete = {}
                 )
             }
+
+            // replaceText cobre qualquer caractere (acentos, símbolos,
+            // emojis) sem depender de key events do teclado virtual
+            onView(withId(R.id.etNoteTitle)).perform(replaceText(specialTitle))
+            onView(withId(R.id.etNoteContent)).perform(replaceText(specialContent))
+
+            // Os caracteres digitados aparecem no campo
+            onView(withId(R.id.etNoteTitle))
+                .check(matches(withText(specialTitle)))
+            onView(withId(R.id.etNoteContent))
+                .check(matches(withText(specialContent)))
+
+            // Com formulário válido, o botão Salvar está habilitado
+            onView(withText("Salvar")).check(matches(isEnabled()))
+            onView(withText("Salvar")).perform(click())
         }
 
-        rule.onNodeWithText("Título").performTextInput(specialTitle)
-        rule.onNodeWithText("Conteúdo").performTextInput(specialContent)
-
-        // Os caracteres digitados aparecem no campo
-        rule.onNodeWithText(specialTitle).assertExists()
-        rule.onNodeWithText(specialContent).assertExists()
-
-        // Com formulário válido, o botão Salvar está habilitado
-        rule.onNodeWithText("Salvar").assertIsEnabled()
-        rule.onNodeWithText("Salvar").performClick()
-
-        rule.runOnIdle {
-            assertNotNull(savedNote)
-            assertEquals(specialTitle, savedNote!!.title)
-            assertEquals(specialContent, savedNote!!.content)
-        }
+        assertNotNull(savedNote)
+        assertEquals(specialTitle, savedNote!!.title)
+        assertEquals(specialContent, savedNote!!.content)
     }
 
     @Test
@@ -71,26 +77,26 @@ class DialogSpecialCharactersTest {
         val specialName = "Configurações ç,ã,é & \"favoritas\" #1 !?"
         var savedCategory: Category? = null
 
-        rule.setContent {
-            MyNotesTheme {
-                CategoryDialog(
+        launchHost().use { scenario ->
+            scenario.onActivity { activity ->
+                CategoryDialog.show(
+                    activity = activity,
                     category = null,
-                    onDismiss = {},
                     onSave = { savedCategory = it },
                     onDelete = {}
                 )
             }
+
+            onView(withId(R.id.etCategoryName)).perform(replaceText(specialName))
+
+            onView(withId(R.id.etCategoryName))
+                .check(matches(withText(specialName)))
+
+            onView(withText("Criar")).check(matches(isEnabled()))
+            onView(withText("Criar")).perform(click())
         }
 
-        rule.onNodeWithText("Nome").performTextInput(specialName)
-        rule.onNodeWithText(specialName).assertExists()
-
-        rule.onNodeWithText("Criar").assertIsEnabled()
-        rule.onNodeWithText("Criar").performClick()
-
-        rule.runOnIdle {
-            assertNotNull(savedCategory)
-            assertEquals(specialName, savedCategory!!.name)
-        }
+        assertNotNull(savedCategory)
+        assertEquals(specialName, savedCategory!!.name)
     }
 }

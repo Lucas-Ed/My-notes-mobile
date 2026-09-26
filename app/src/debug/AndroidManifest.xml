@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- Activity hospedeira apenas para os testes de instrumentação:
+             exibe os diálogos sem depender do Hilt/Room do app.
+             Declarada aqui (source set debug) para que o manifesto e os
+             recursos (tema Theme.Mynotes, layouts dos diálogos) venham do
+             APK do app; o APK de teste não embute recursos do app. -->
+        <activity
+            android:name="com.example.my_notes.DialogHostActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Mynotes" />
+    </application>
+
+</manifest>

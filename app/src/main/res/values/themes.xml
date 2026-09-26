@@ -8,4 +8,16 @@
         <item name="android:windowBackground">@color/background</item>
         <item name="android:statusBarColor">@color/primary</item>
     </style>
+
+    <!-- Tema claro aplicado aos diálogos (MaterialAlertDialogBuilder):
+         fundo branco fixo, títulos/campos escuros e botões roxos,
+         mesmo quando o app está em modo escuro. -->
+    <style name="Theme.Mynotes.Dialog" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/onPrimary</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/text_dark</item>
+        <item name="android:windowBackground">@color/white</item>
+    </style>
 </resources>
