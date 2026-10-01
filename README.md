@@ -215,6 +215,8 @@ Todos os **20 testes unitários passam** com `./gradlew testDebugUnitTest`.
 
 ## 8. Capturas de Tela — Layout do Aplicativo
 
+<p align="center"><img src="img/gif.gif" width="280" alt="Demonstração do My Notes: criação de categoria com paleta de cores e pré-visualização em tempo real"></p>
+
 Imagens do layout real do **My Notes** (pasta [`img/`](img/)).
 
 ### Tela principal (estado inicial)
